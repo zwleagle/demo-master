@@ -3,10 +3,7 @@ package com.zwl.demo.security.config;
 import com.google.code.kaptcha.Producer;
 import com.google.code.kaptcha.impl.DefaultKaptcha;
 import com.google.code.kaptcha.util.Config;
-import com.zwl.demo.security.compoment.JwtAuthenticationTokenFilter;
-import com.zwl.demo.security.compoment.RestAuthenticationEntryPoint;
-import com.zwl.demo.security.compoment.RestfulAccessDeniedHandler;
-import com.zwl.demo.security.compoment.VerificationCodeFilter;
+import com.zwl.demo.security.compoment.*;
 import com.zwl.demo.security.utils.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -45,6 +42,9 @@ import java.util.Properties;
 //@EnableWebSecurity
 //@EnableGlobalMethodSecurity(prePostEnabled=true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired(required = false)
+    private DynamicSecurityService dynamicSecurityService;
 
 
     @Override

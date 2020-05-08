@@ -3,13 +3,14 @@ package com.zwl.demo.dao;
 
 import com.zwl.demo.model.UmsAdminRoleRelation;
 import com.zwl.demo.model.UmsPermission;
+import com.zwl.demo.model.UmsResource;
 import com.zwl.demo.model.UmsRole;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 /**
- * 后台用户与角色管理自定义Dao
+ * 自定义后台用户与角色管理Dao
  * Created by macro on 2018/10/8.
  */
 public interface UmsAdminRoleRelationDao {
@@ -32,4 +33,14 @@ public interface UmsAdminRoleRelationDao {
      * 获取用户所有权限(包括+-权限)
      */
     List<UmsPermission> getPermissionList(@Param("adminId") Long adminId);
+
+    /**
+     * 获取用户所有可访问资源
+     */
+    List<UmsResource> getResourceList(@Param("adminId") Long adminId);
+
+    /**
+     * 获取资源相关用户ID列表
+     */
+    List<Long> getAdminIdList(@Param("resourceId") Long resourceId);
 }
