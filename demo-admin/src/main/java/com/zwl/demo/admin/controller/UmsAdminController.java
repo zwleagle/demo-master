@@ -8,6 +8,8 @@ import com.zwl.demo.admin.dto.UpdateAdminPasswordParam;
 import com.zwl.demo.admin.service.UmsAdminService;
 import com.zwl.demo.model.UmsAdmin;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +35,9 @@ public class UmsAdminController {
     @Autowired
     UmsAdminService umsAdminService;
 
-
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", name = "Authorization", required = true, value = "user token", dataType = "String", defaultValue = "123456")
+    })
     @ApiOperation(value = "用户注册")
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     @ResponseBody
@@ -102,6 +106,9 @@ public class UmsAdminController {
         return CommonResult.failed();
     }
 
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "header", name = "Authorization", required = true, value = "user token", dataType = "String", defaultValue = "123456")
+           })
     @ApiOperation("修改指定用户密码")
     @RequestMapping(value = "/updatePassword", method = RequestMethod.POST)
     @ResponseBody
