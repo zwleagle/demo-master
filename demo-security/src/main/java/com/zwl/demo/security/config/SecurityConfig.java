@@ -6,8 +6,10 @@ import com.google.code.kaptcha.util.Config;
 import com.zwl.demo.security.compoment.*;
 import com.zwl.demo.security.utils.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,6 +18,7 @@ import org.springframework.security.config.annotation.web.configurers.Expression
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.Properties;
@@ -46,6 +49,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired(required = false)
     private DynamicSecurityService dynamicSecurityService;
 
+    @Autowired
+    private IgnoreUrlsConfig ignoreUrlsConfig;
+
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
@@ -53,11 +59,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = httpSecurity
                 .authorizeRequests();
 
-        for (String url : ignoreUrlsConfig().getUrls()
+        for (String url : ignoreUrlsConfig.getUrls()
         ) {
 
             registry.antMatchers(url).permitAll();
         }
+
+
 
         // 任何请求需要身份认证
         registry.and()
@@ -77,10 +85,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(restAuthenticationEntryPoint())
                 // 自定义权限拦截器JWT过滤器
                 .and()
-                .addFilterBefore(jwtAuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(verificationCodeFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(verificationCodeFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        //有动态权限配置时添加动态权限校验过滤器
+        if(dynamicSecurityService!=null){
+            registry.and().addFilterBefore(dynamicSecurityFilter(), FilterSecurityInterceptor.class);
+        }
 
 
+    }
+
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userDetailsService())
+                .passwordEncoder(passwordEncoder());
     }
 
 
@@ -96,10 +116,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
 
-    @Bean
-    public IgnoreUrlsConfig ignoreUrlsConfig() {
-        return new IgnoreUrlsConfig();
-    }
+//    @Bean
+//    public IgnoreUrlsConfig ignoreUrlsConfig() {
+//        return new IgnoreUrlsConfig();
+//    }
 
 
     @Bean
@@ -130,6 +150,29 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public VerificationCodeFilter verificationCodeFilter(){
         return new VerificationCodeFilter();
     }
+
+
+
+    @ConditionalOnBean(name = "dynamicSecurityService")
+    @Bean
+    public DynamicAccessDecisionManager dynamicAccessDecisionManager() {
+        return new DynamicAccessDecisionManager();
+    }
+
+
+    @ConditionalOnBean(name = "dynamicSecurityService")
+    @Bean
+    public DynamicSecurityFilter dynamicSecurityFilter() {
+        return new DynamicSecurityFilter();
+    }
+
+    @ConditionalOnBean(name = "dynamicSecurityService")
+    @Bean
+    public DynamicSecurityMetadataSource dynamicSecurityMetadataSource() {
+        return new DynamicSecurityMetadataSource();
+    }
+
+
 
     @Bean
     public Producer captcha() {

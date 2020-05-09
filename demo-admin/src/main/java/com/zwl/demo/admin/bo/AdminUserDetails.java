@@ -3,6 +3,7 @@ package com.zwl.demo.admin.bo;
 
 import com.zwl.demo.model.UmsAdmin;
 import com.zwl.demo.model.UmsPermission;
+import com.zwl.demo.model.UmsResource;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,18 +18,18 @@ import java.util.stream.Collectors;
  */
 public class AdminUserDetails implements UserDetails {
     private UmsAdmin umsAdmin;
-    private List<UmsPermission> permissionList;
-    public AdminUserDetails(UmsAdmin umsAdmin, List<UmsPermission> permissionList) {
+    private List<UmsResource> resourceList;
+    public AdminUserDetails(UmsAdmin umsAdmin, List<UmsResource> resourceList) {
         this.umsAdmin = umsAdmin;
-        this.permissionList = permissionList;
+        this.resourceList = resourceList;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         //返回当前用户的权限
-        return permissionList.stream()
-                .filter(permission -> permission.getValue()!=null)
-                .map(permission ->new SimpleGrantedAuthority(permission.getValue()))
+        return resourceList.stream()
+                .filter(resource -> resource.getName()!=null)
+                .map(resource ->new SimpleGrantedAuthority(resource.getId()+":"+resource.getName()))
                 .collect(Collectors.toList());
     }
 

@@ -4,6 +4,7 @@ import com.zwl.demo.admin.dto.UpdateAdminPasswordParam;
 import com.zwl.demo.model.UmsAdmin;
 import com.zwl.demo.admin.dto.UmsAdminParam;
 import com.zwl.demo.model.UmsPermission;
+import com.zwl.demo.model.UmsResource;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
@@ -48,4 +49,7 @@ public interface UmsAdminService {
     int update(Long id, UmsAdmin admin);
 
     int updatePassword(UpdateAdminPasswordParam updatePasswordParam);
+
+
+    public List<UmsResource> getResourceList(Long adminId);
 }

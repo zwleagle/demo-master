@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.zwl.demo.admin.bo.AdminUserDetails;
 import com.zwl.demo.admin.dto.UpdateAdminPasswordParam;
+import com.zwl.demo.admin.service.UmsAdminCacheService;
 import com.zwl.demo.dao.UmsAdminRoleRelationDao;
 import com.zwl.demo.admin.dto.UmsAdminParam;
 import com.zwl.demo.admin.service.UmsAdminService;
@@ -11,6 +12,7 @@ import com.zwl.demo.mapper.UmsAdminMapper;
 import com.zwl.demo.model.UmsAdmin;
 import com.zwl.demo.model.UmsAdminExample;
 import com.zwl.demo.model.UmsPermission;
+import com.zwl.demo.model.UmsResource;
 import com.zwl.demo.security.utils.JwtTokenUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +44,10 @@ public class UmsAdminServiceImpl implements UmsAdminService {
 
     @Autowired
     private UmsAdminRoleRelationDao UmsAdminRoleRelationDao;
+
+
+    @Autowired
+    private UmsAdminCacheService adminCacheService;
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
@@ -159,14 +165,28 @@ public class UmsAdminServiceImpl implements UmsAdminService {
 
     }
 
+
+    @Override
+    public List<UmsResource> getResourceList(Long adminId) {
+        List<UmsResource> resourceList = adminCacheService.getResourceList(adminId);
+        if(CollUtil.isNotEmpty(resourceList)){
+            return  resourceList;
+        }
+        resourceList = UmsAdminRoleRelationDao.getResourceList(adminId);
+        if(CollUtil.isNotEmpty(resourceList)){
+            adminCacheService.setResourceList(adminId,resourceList);
+        }
+        return resourceList;
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) {
 
         //获取用户信息
         UmsAdmin admin = getAdminByUsername(username);
         if (admin != null) {
-            List<UmsPermission> permissionList = getPermissionList(admin.getId());
-            return new AdminUserDetails(admin,permissionList);
+            List<UmsResource> resourceList = getResourceList(admin.getId());
+            return new AdminUserDetails(admin,resourceList);
         }
         throw new UsernameNotFoundException("用户名或密码错误");
 
